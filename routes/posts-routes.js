@@ -13,7 +13,7 @@ router.get('/:pid', PostsControllers.getPostById);
 
 router.get('/users/:uid', PostsControllers.getPostsByUserId);
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 router.post(
   '/',

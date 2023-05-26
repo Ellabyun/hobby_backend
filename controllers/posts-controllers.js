@@ -60,8 +60,6 @@ export const createPost = async (req, res, next) => {
       new HttpError('Invalid inputs passed, please check your data!', 422)
     );
   }
-  console.log(req.body);
-  console.log(req.files);
   const { comment, creator } = req.body;
   const imagesArray = req.files.map((f) => ({
     url: f.path,
@@ -86,8 +84,6 @@ export const createPost = async (req, res, next) => {
     return next(error);
   }
 
-  console.log(user);
-
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -110,7 +106,6 @@ export const updatePost = async (req, res, next) => {
       new HttpError('Invalid inputs passed, please check your data!', 422)
     );
   }
-  console.log('딜리트이미지: ', req.body.deleteImages);
   const postId = req.params.pid;
 
   let post;
@@ -123,9 +118,12 @@ export const updatePost = async (req, res, next) => {
     );
     return next(error);
   }
-  console.log(post.images.length);
-  console.log(req.body.deleteImages.length);
-  console.log(req.files);
+
+  if (post.creator.toString() !== req.userData.userId) {
+    const error = new HttpError('You are not allowed to edit this post', 401);
+    return next(error);
+  }
+
   let imagesArray;
   if (!req.files) {
     if (
@@ -184,7 +182,10 @@ export const removePost = async (req, res, next) => {
     const error = new HttpError('Could not find post for this id.', 404);
     return next(error);
   }
-
+  if (post.creator.id !== req.userData.userId) {
+    const error = new HttpError('You are not allowed to delete this post', 401);
+    return next(error);
+  }
   for (let img of post.images) {
     await cloudinary.uploader.destroy(img.filename);
   }

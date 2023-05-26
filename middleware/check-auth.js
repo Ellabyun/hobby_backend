@@ -2,8 +2,11 @@ import jwt from 'jsonwebtoken';
 import HttpError from '../models/http-error.js';
 
 export default (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
   try {
-    const token = req.headers.authorization.splite(' ')[1];
+    const token = req.headers.authorization.split(' ')[1];
     if (!token) {
       throw new Error('Authentication failed!');
     }
@@ -11,7 +14,7 @@ export default (req, res, next) => {
     req.userData = { userId: decodedToken.userId };
     next();
   } catch (err) {
-    const error = new HttpError('Authentication failed!', 401);
+    const error = new HttpError('Authentication failed!!', 403);
     return next(error);
   }
 };
